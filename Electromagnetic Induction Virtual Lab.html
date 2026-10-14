@@ -1,0 +1,2240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electromagnetic Induction & Lenz's Law Virtual Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    /* Custom range slider styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #334155;
+      height: 6px;
+      border-radius: 9999px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      border: 2px solid #ffffff;
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .pulse-glow {
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
+
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 text-white font-bold text-xl">
+          <i class="fa-solid fa-atom animate-spin-slow"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs uppercase tracking-widest font-black text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/30">
+              THE PHYSICS ROOM
+            </span>
+            <span class="text-xs text-amber-300 font-bold bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30">
+              by Mayur Sir
+            </span>
+          </div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent mt-0.5">
+            Electromagnetic Induction & Lenz's Law Virtual Lab
+          </h1>
+        </div>
+      </div>
+
+      <!-- Action & Mode Switcher Tabs -->
+      <div class="flex flex-wrap items-center gap-2">
+        <nav class="flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs sm:text-sm font-medium">
+          <button id="tab-btn-sim" onclick="switchLabTab('sim')" class="px-3 sm:px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 bg-cyan-500 text-slate-950 font-semibold shadow">
+            <i class="fa-solid fa-flask"></i> <span>Simulation Lab</span>
+          </button>
+          <button id="tab-btn-predict" onclick="switchLabTab('predict')" class="px-3 sm:px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+            <i class="fa-solid fa-brain"></i> <span>Prediction Lab</span>
+          </button>
+          <button id="tab-btn-verify" onclick="switchLabTab('verify')" class="px-3 sm:px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+            <i class="fa-solid fa-chart-line"></i> <span>Faraday Verification</span>
+          </button>
+          <button id="tab-btn-quiz" onclick="switchLabTab('quiz')" class="px-3 sm:px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 text-slate-300 hover:text-white">
+            <i class="fa-solid fa-graduation-cap"></i> <span>NEET / JEE MCQs</span>
+          </button>
+        </nav>
+
+        <!-- Share Lab Button -->
+        <button onclick="openShareModal()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white transition flex items-center gap-1.5 shadow-md shadow-indigo-600/30">
+          <i class="fa-solid fa-share-nodes"></i> <span>Share Lab</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex flex-col gap-4">
+
+    <!-- TAB 1: INTERACTIVE SIMULATION LAB -->
+    <div id="tab-content-sim" class="flex flex-col gap-4">
+      
+      <!-- Top Status Banner with Lenz Rule Explanation & Deflection Summary -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="glass-panel p-3 rounded-xl flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+            <i class="fa-solid fa-wave-square text-lg"></i>
+          </div>
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Magnetic Flux (Φ)</div>
+            <div id="telemetry-flux" class="text-base sm:text-lg font-bold font-mono-code text-cyan-400">0.00 mWb</div>
+          </div>
+        </div>
+
+        <div class="glass-panel p-3 rounded-xl flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <i class="fa-solid fa-bolt text-lg"></i>
+          </div>
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Induced EMF (ε)</div>
+            <div id="telemetry-emf" class="text-base sm:text-lg font-bold font-mono-code text-emerald-400">0.00 mV</div>
+          </div>
+        </div>
+
+        <div class="glass-panel p-3 rounded-xl flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <i class="fa-solid fa-gauge-high text-lg"></i>
+          </div>
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Induced Current (I)</div>
+            <div id="telemetry-current" class="text-base sm:text-lg font-bold font-mono-code text-amber-400">0.00 mA</div>
+          </div>
+        </div>
+
+        <div class="glass-panel p-3 rounded-xl flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+            <i class="fa-solid fa-shield-halved text-lg"></i>
+          </div>
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Lenz Opposing Face</div>
+            <div id="telemetry-lenz" class="text-xs sm:text-sm font-bold text-purple-300">Neutral (No motion)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Interactive Workbench Canvas + Controls -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+        <!-- 2D/3D Interactive Visualizer Canvas (8 Cols) -->
+        <div class="lg:col-span-8 flex flex-col gap-3">
+          <div class="relative glass-panel rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-gradient-to-b from-slate-900 to-slate-950">
+            
+            <!-- Floating overlay controls and badges -->
+            <div class="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 backdrop-blur">
+                <i class="fa-solid fa-hand-pointer mr-1"></i> Drag Magnet or use Controls
+              </span>
+              <span id="motion-badge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800/80 border border-slate-700 text-slate-300 backdrop-blur">
+                Velocity: 0.0 cm/s
+              </span>
+            </div>
+
+            <div class="absolute top-3 right-3 z-10 flex items-center gap-2">
+              <button onclick="toggleFieldLines()" id="btn-toggle-field" class="px-3 py-1 text-xs rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-lines-leaning text-cyan-400"></i> Field Lines: <span id="field-status-txt">ON</span>
+              </button>
+              <button onclick="toggleAudioFeedback()" id="btn-toggle-sound" class="px-3 py-1 text-xs rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-volume-high text-amber-400"></i> Audio: <span id="sound-status-txt">ON</span>
+              </button>
+            </div>
+
+            <!-- Canvas Element -->
+            <canvas id="simCanvas" class="w-full h-[400px] sm:h-[480px] cursor-grab active:cursor-grabbing block"></canvas>
+
+            <!-- Bottom Floating Quick-Action Bar for Magnet Motion -->
+            <div class="p-3 bg-slate-900/95 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+              <div class="flex items-center gap-2">
+                <button onclick="triggerMagnetStep(-1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-medium rounded-lg border border-slate-700 transition flex items-center gap-1">
+                  <i class="fa-solid fa-arrow-left"></i> Move Into Coil
+                </button>
+                <button onclick="triggerMagnetStep(1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-medium rounded-lg border border-slate-700 transition flex items-center gap-1">
+                  Move Out <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button onclick="toggleOscillation()" id="btn-oscillation" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg shadow-md transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-arrows-spin"></i> <span>Oscillate (SHM)</span>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button onclick="flipMagnetPoles()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-rose-400 font-medium rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-repeat"></i> Flip Magnet Poles (<span id="btn-pole-txt">N Facing</span>)
+                </button>
+                <button onclick="resetMagnetPosition()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg border border-slate-700 transition" title="Reset Position">
+                  <i class="fa-solid fa-rotate-left"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Real-Time Waveform Oscilloscope -->
+          <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-cyan-400"></i>
+                <h3 class="text-sm font-semibold text-slate-200">Real-Time Oscilloscope: Flux Φ(t) & Induced EMF ε(t)</h3>
+              </div>
+              <div class="flex items-center gap-4 text-xs font-mono-code">
+                <span class="flex items-center gap-1 text-sky-400"><span class="w-3 h-1 bg-sky-400 inline-block rounded"></span> Flux Φ</span>
+                <span class="flex items-center gap-1 text-emerald-400"><span class="w-3 h-1 bg-emerald-400 inline-block rounded"></span> Induced EMF ε</span>
+                <button onclick="clearOscilloscope()" class="text-slate-400 hover:text-slate-200 text-xs underline">Clear</button>
+              </div>
+            </div>
+            <div class="h-44 w-full">
+              <canvas id="scopeCanvas" class="w-full h-full block rounded-lg bg-slate-950/70 border border-slate-800/80"></canvas>
+            </div>
+            <p class="text-[11px] text-slate-400 italic">
+              Notice: The peak of induced EMF $\mathcal{E}$ corresponds to the maximum slope $|d\Phi/dt|$, and is exactly zero when flux reaches its local extrema!
+            </p>
+          </div>
+        </div>
+
+        <!-- Parameters & Controls Side Panel (4 Cols) -->
+        <div class="lg:col-span-4 flex flex-col gap-4">
+
+          <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-cyan-400"></i> Physics Parameters
+              </h3>
+              <button onclick="resetDefaultParameters()" class="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Reset</button>
+            </div>
+
+            <!-- Number of turns (N) -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-300 font-medium">Coil Turns ($N$)</span>
+                <span id="label-turns" class="font-mono-code text-cyan-400 font-bold">10 turns</span>
+              </div>
+              <input type="range" id="param-turns" min="1" max="25" step="1" value="10" oninput="updateSimulationParameters()">
+              <div class="flex justify-between text-[10px] text-slate-500 font-mono-code">
+                <span>1</span>
+                <span>10</span>
+                <span>25</span>
+              </div>
+            </div>
+
+            <!-- Coil Area / Radius -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-300 font-medium">Coil Cross-Section Area ($A$)</span>
+                <span id="label-area" class="font-mono-code text-cyan-400 font-bold">50.0 cm²</span>
+              </div>
+              <input type="range" id="param-area" min="15" max="100" step="5" value="50" oninput="updateSimulationParameters()">
+              <div class="flex justify-between text-[10px] text-slate-500 font-mono-code">
+                <span>15 cm²</span>
+                <span>50 cm²</span>
+                <span>100 cm²</span>
+              </div>
+            </div>
+
+            <!-- Magnetic Field Strength B0 -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-300 font-medium">Magnet Strength ($B_0$)</span>
+                <span id="label-strength" class="font-mono-code text-cyan-400 font-bold">1.0 T</span>
+              </div>
+              <input type="range" id="param-strength" min="0.2" max="2.5" step="0.1" value="1.0" oninput="updateSimulationParameters()">
+              <div class="flex justify-between text-[10px] text-slate-500 font-mono-code">
+                <span>0.2 T</span>
+                <span>1.0 T</span>
+                <span>2.5 T</span>
+              </div>
+            </div>
+
+            <!-- Coil Resistance R -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-300 font-medium">Circuit Resistance ($R$)</span>
+                <span id="label-resistance" class="font-mono-code text-cyan-400 font-bold">5.0 Ω</span>
+              </div>
+              <input type="range" id="param-resistance" min="1.0" max="20.0" step="0.5" value="5.0" oninput="updateSimulationParameters()">
+              <div class="flex justify-between text-[10px] text-slate-500 font-mono-code">
+                <span>1.0 Ω</span>
+                <span>5.0 Ω</span>
+                <span>20.0 Ω</span>
+              </div>
+            </div>
+
+            <!-- Oscillation Speed -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-300 font-medium">Auto Oscillation Frequency ($f$)</span>
+                <span id="label-freq" class="font-mono-code text-cyan-400 font-bold">0.8 Hz</span>
+              </div>
+              <input type="range" id="param-freq" min="0.2" max="2.5" step="0.1" value="0.8" oninput="updateSimulationParameters()">
+              <div class="flex justify-between text-[10px] text-slate-500 font-mono-code">
+                <span>0.2 Hz</span>
+                <span>0.8 Hz</span>
+                <span>2.5 Hz</span>
+              </div>
+            </div>
+
+            <!-- Record to Verification Table Button -->
+            <button onclick="recordCurrentDataPoint()" class="mt-2 w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-semibold text-xs transition shadow-lg shadow-emerald-700/20 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-plus-circle"></i> Record Data to Verification Tab
+            </button>
+          </div>
+
+          <!-- Conceptual Quick Guide Box -->
+          <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-2.5 text-xs">
+            <h4 class="font-bold text-amber-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-lightbulb"></i> Lenz's Law Core Rule
+            </h4>
+            <p class="text-slate-300 leading-relaxed">
+              "The direction of the induced current is always such as to oppose the change in magnetic flux that produces it."
+            </p>
+            <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 space-y-1.5 text-[11px] text-slate-300">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                <span><strong>N-pole moves INTO coil:</strong> Facing end becomes <strong>North</strong> (Repulsion).</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span><strong>N-pole moves AWAY from coil:</strong> Facing end becomes <strong>South</strong> (Attraction).</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                <span><strong>Stationary magnet:</strong> Flux is constant $\frac{d\Phi}{dt} = 0 \implies \mathcal{E} = 0$.</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 2: PREDICTION LAB -->
+    <div id="tab-content-predict" class="hidden flex-col gap-4">
+      <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex flex-col gap-4 max-w-4xl mx-auto w-full">
+        <div class="border-b border-slate-800 pb-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-brain text-purple-400"></i> Hypothesis & Prediction Mode
+            </h2>
+            <p class="text-xs text-slate-400">Test your conceptual understanding before running the real-time simulation.</p>
+          </div>
+          <button onclick="generateRandomPredictionChallenge()" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold transition shadow flex items-center gap-1.5">
+            <i class="fa-solid fa-shuffle"></i> New Random Scenario
+          </button>
+        </div>
+
+        <!-- Scenario Prompt Card -->
+        <div class="bg-slate-900/90 border border-slate-700/80 p-4 rounded-xl flex flex-col gap-3">
+          <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-400">
+            <i class="fa-solid fa-circle-question"></i> Experimental Situation
+          </div>
+          <p id="pred-scenario-text" class="text-sm sm:text-base font-medium text-slate-100 leading-relaxed">
+            Loading scenario...
+          </p>
+          <div id="pred-scenario-diagram" class="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-center min-h-[90px] text-xs text-slate-400">
+            <!-- Dynamic ASCII / Visual representation -->
+          </div>
+        </div>
+
+        <!-- Interactive Prediction Questions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Question 1: Induced Magnetic Polarity -->
+          <div class="bg-slate-900/70 p-4 rounded-xl border border-slate-800 flex flex-col gap-2.5">
+            <label class="text-xs font-semibold text-slate-300">1. What magnetic pole develops on the facing side of the coil?</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="selectPrediction('pole', 'NORTH')" id="btn-pred-pole-NORTH" class="pred-pole-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-rose-400">
+                North (N)
+              </button>
+              <button onclick="selectPrediction('pole', 'SOUTH')" id="btn-pred-pole-SOUTH" class="pred-pole-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-sky-400">
+                South (S)
+              </button>
+              <button onclick="selectPrediction('pole', 'NONE')" id="btn-pred-pole-NONE" class="pred-pole-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-slate-400">
+                None (Zero)
+              </button>
+            </div>
+          </div>
+
+          <!-- Question 2: Induced Current Direction as seen from the Magnet -->
+          <div class="bg-slate-900/70 p-4 rounded-xl border border-slate-800 flex flex-col gap-2.5">
+            <label class="text-xs font-semibold text-slate-300">2. Current direction viewed from the approaching magnet:</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="selectPrediction('dir', 'ANTICLOCKWISE')" id="btn-pred-dir-ANTICLOCKWISE" class="pred-dir-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-emerald-400">
+                Anticlockwise
+              </button>
+              <button onclick="selectPrediction('dir', 'CLOCKWISE')" id="btn-pred-dir-CLOCKWISE" class="pred-dir-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-amber-400">
+                Clockwise
+              </button>
+              <button onclick="selectPrediction('dir', 'ZERO')" id="btn-pred-dir-ZERO" class="pred-dir-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-slate-400">
+                Zero Current
+              </button>
+            </div>
+          </div>
+
+          <!-- Question 3: Magnetic Force Experienced by the Magnet -->
+          <div class="bg-slate-900/70 p-4 rounded-xl border border-slate-800 flex flex-col gap-2.5">
+            <label class="text-xs font-semibold text-slate-300">3. Nature of magnetic force between coil and magnet:</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="selectPrediction('force', 'REPULSIVE')" id="btn-pred-force-REPULSIVE" class="pred-force-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-rose-400">
+                Repulsive
+              </button>
+              <button onclick="selectPrediction('force', 'ATTRACTIVE')" id="btn-pred-force-ATTRACTIVE" class="pred-force-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-blue-400">
+                Attractive
+              </button>
+              <button onclick="selectPrediction('force', 'ZERO')" id="btn-pred-force-ZERO" class="pred-force-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-slate-400">
+                Zero Force
+              </button>
+            </div>
+          </div>
+
+          <!-- Question 4: Galvanometer Pointer Deflection -->
+          <div class="bg-slate-900/70 p-4 rounded-xl border border-slate-800 flex flex-col gap-2.5">
+            <label class="text-xs font-semibold text-slate-300">4. Galvanometer deflection from center-zero:</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="selectPrediction('meter', 'LEFT')" id="btn-pred-meter-LEFT" class="pred-meter-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-cyan-400">
+                Deflects Left
+              </button>
+              <button onclick="selectPrediction('meter', 'RIGHT')" id="btn-pred-meter-RIGHT" class="pred-meter-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-teal-400">
+                Deflects Right
+              </button>
+              <button onclick="selectPrediction('meter', 'ZERO')" id="btn-pred-meter-ZERO" class="pred-meter-btn py-2 text-xs font-bold rounded-lg border border-slate-700 hover:bg-slate-800 transition text-slate-400">
+                No Deflection
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verify & Run Simulation Button -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+          <button onclick="evaluatePredictionAndExecute()" class="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-play"></i> Verify Hypothesis & Run Simulation
+          </button>
+          <div id="prediction-score-badge" class="text-xs font-mono-code text-slate-400">
+            Predictions Solved: <span id="pred-score-val" class="text-purple-400 font-bold">0 / 0</span>
+          </div>
+        </div>
+
+        <!-- Feedback Result Container -->
+        <div id="prediction-result-box" class="hidden p-4 rounded-xl border text-xs sm:text-sm leading-relaxed">
+          <!-- Populated dynamically -->
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 3: QUANTITATIVE FARADAY VERIFICATION -->
+    <div id="tab-content-verify" class="hidden flex-col gap-4">
+      <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex flex-col gap-4">
+        <div class="border-b border-slate-800 pb-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-emerald-400"></i> Faraday's Law Quantitative Verification
+            </h2>
+            <p class="text-xs text-slate-400">
+              Mathematically test $\mathcal{E} = -N \frac{\Delta\Phi}{\Delta t}$. Collect experimental points and verify linear proportionality.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="autoGenerateExperimentData()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition shadow flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Run Sweep Series
+            </button>
+            <button onclick="clearExperimentTable()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition">
+              Clear Table
+            </button>
+          </div>
+        </div>
+
+        <!-- Grid of Table and Verification Graph -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Data Table (7 Cols) -->
+          <div class="lg:col-span-7 overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-900 border-b border-slate-800 text-slate-400 font-mono-code">
+                  <th class="p-2.5">Trial</th>
+                  <th class="p-2.5">Turns ($N$)</th>
+                  <th class="p-2.5">Area ($A$)</th>
+                  <th class="p-2.5">Speed ($v$)</th>
+                  <th class="p-2.5">Peak $\Delta\Phi/\Delta t$</th>
+                  <th class="p-2.5 text-emerald-400">Peak $\mathcal{E}_{meas}$</th>
+                  <th class="p-2.5 text-sky-400">$\mathcal{E}_{theor} = N\frac{d\Phi}{dt}$</th>
+                </tr>
+              </thead>
+              <tbody id="verify-table-body" class="divide-y divide-slate-800/60 font-mono-code text-slate-200">
+                <!-- Dynamically added rows -->
+                <tr>
+                  <td colspan="7" class="p-4 text-center text-slate-500 italic">No experimental data recorded yet. Click "Record Data" in the Simulation Lab or "Auto-Run Sweep Series".</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Chart Visualizing E vs N or E vs v (5 Cols) -->
+          <div class="lg:col-span-5 bg-slate-900/80 p-3 rounded-xl border border-slate-800 flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-200">Proportionality Plot: $\mathcal{E}_{\text{peak}}$ vs $(N \cdot v)$</span>
+              <span class="text-emerald-400 font-mono-code font-bold" id="r-squared-label">$R^2 = --$</span>
+            </div>
+            <div class="h-60 w-full">
+              <canvas id="verifyChart" class="w-full h-full block"></canvas>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-snug">
+              A straight line through the origin confirms Faraday's 2nd Law: the magnitude of induced EMF is directly proportional to the rate of change of magnetic flux.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 4: NEET / JEE MCQs PRACTICE -->
+    <div id="tab-content-quiz" class="hidden flex-col gap-4">
+      <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex flex-col gap-4 max-w-4xl mx-auto w-full">
+        <div class="border-b border-slate-800 pb-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-graduation-cap text-amber-400"></i> NEET & JEE Main High-Yield EMI Questions
+            </h2>
+            <p class="text-xs text-slate-400">Curated conceptual & numerical problems on Faraday's law, Lenz's law, and induced current.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-mono-code bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-amber-400 font-bold">
+              Score: <span id="quiz-score-display">0 / 0</span>
+            </span>
+            <button onclick="resetQuizState()" class="text-xs text-slate-400 hover:text-white underline">Restart</button>
+          </div>
+        </div>
+
+        <!-- Question Container -->
+        <div id="quiz-container" class="flex flex-col gap-4">
+          <!-- Dynamic MCQ rendered here -->
+        </div>
+
+        <!-- Question Navigation Buttons -->
+        <div class="flex items-center justify-between pt-2">
+          <button onclick="navigateQuizQuestion(-1)" id="quiz-prev-btn" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:pointer-events-none text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-chevron-left"></i> Previous
+          </button>
+          <span id="quiz-progress-text" class="text-xs font-mono-code text-slate-400">Question 1 of 5</span>
+          <button onclick="navigateQuizQuestion(1)" id="quiz-next-btn" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded-xl text-xs transition flex items-center gap-1.5">
+            Next <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-800/80 bg-slate-950/90 py-4 mt-auto text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-200">THE PHYSICS ROOM</span>
+        <span class="text-slate-600">•</span>
+        <span class="text-cyan-400 font-semibold">Guided by Mayur Sir</span>
+        <span class="text-slate-600">•</span>
+        <span>Empowering JEE & NEET Aspirants</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="font-mono-code text-slate-500">Faraday's Law: $\mathcal{E} = -N \frac{d\Phi}{dt}$</span>
+        <button onclick="openShareModal()" class="text-cyan-400 hover:text-cyan-300 underline font-medium flex items-center gap-1">
+          <i class="fa-solid fa-link text-[10px]"></i> Share Lab Link
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Share Modal Dialog -->
+  <div id="share-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 max-w-md w-full rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative animate-fade-in">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-share-nodes"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Share Virtual Lab</h3>
+            <p class="text-[11px] text-slate-400">THE PHYSICS ROOM by Mayur Sir</p>
+          </div>
+        </div>
+        <button onclick="closeShareModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <div class="flex justify-between items-center text-xs">
+          <label class="text-slate-300 font-medium">Lab Web Link:</label>
+          <span class="text-[10px] text-slate-400 italic">Editable for your custom hosted link</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="share-url-input" type="text" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded-xl text-xs font-mono-code text-cyan-300 outline-none focus:border-cyan-500 transition select-all">
+          <button onclick="copyShareLink()" id="btn-copy-link" class="px-3.5 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center gap-1.5 whitespace-nowrap shadow">
+            <i class="fa-solid fa-copy"></i> <span>Copy</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Share Platforms -->
+      <div class="flex flex-col gap-2 pt-1">
+        <span class="text-xs text-slate-400 font-medium">Instant Share with Students & Batches:</span>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="shareToWhatsApp()" class="p-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center justify-center gap-2 transition active:scale-95 shadow">
+            <i class="fa-brands fa-whatsapp text-base text-emerald-400"></i> WhatsApp
+          </button>
+          <button type="button" onclick="shareToTelegram()" class="p-2.5 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/40 text-sky-300 text-xs font-semibold flex items-center justify-center gap-2 transition active:scale-95 shadow">
+            <i class="fa-brands fa-telegram text-base text-sky-400"></i> Telegram
+          </button>
+        </div>
+
+        <!-- Copy Pre-formatted Invite Message Button -->
+        <button type="button" onclick="copyFullInviteMessage()" class="w-full mt-1 py-2 px-3 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-medium transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-message text-indigo-400"></i>
+          <span>Copy Ready-to-Paste Study Group Message</span>
+        </button>
+
+        <!-- Native Share Option (Mobile / Tablets) -->
+        <button type="button" id="btn-native-share" onclick="shareViaDeviceNative()" class="hidden w-full py-2 px-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-semibold transition items-center justify-center gap-2 shadow">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span>Share via Device App Menu</span>
+        </button>
+      </div>
+
+      <!-- Quick Hosting Advice -->
+      <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 flex flex-col gap-1 leading-relaxed">
+        <div class="text-amber-400 font-semibold flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb"></i> How to host online for students:
+        </div>
+        <span>Upload this single <strong class="text-slate-300">index.html</strong> file to <strong>GitHub Pages</strong>, <strong>Netlify Drop</strong> (free drag-and-drop), or <strong>Vercel</strong> to get a permanent link for your batches.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copied Toast Banner -->
+  <div id="copy-toast" class="hidden fixed bottom-6 right-6 z-50 bg-emerald-600 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-xl items-center gap-2">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="copy-toast-text">Lab link copied to clipboard!</span>
+  </div>
+
+  <!-- SCRIPT IMPLEMENTATION -->
+  <script>
+    // Helper to get clean shareable web link
+    function getShareableUrl() {
+      let url = window.location.href;
+      // If running inside local iframe, blob, or sandbox without real URL
+      if (!url || url === 'about:blank' || url.startsWith('blob:') || url.startsWith('file:')) {
+        return window.location.origin && window.location.origin !== 'null' ? window.location.origin : 'https://the-physics-room-mayursir.web.app';
+      }
+      return url;
+    }
+
+    function getFormattedShareMessage(url) {
+      return `🔬 *THE PHYSICS ROOM by Mayur Sir*\n⚡ *Electromagnetic Induction & Lenz's Law Virtual Lab*\n\nExplore interactive simulations, live galvanometer deflection, Faraday's verification, and NEET/JEE question practice!\n\n👉 Access Lab Here: ${url}`;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('copy-toast');
+      const toastText = document.getElementById('copy-toast-text');
+      toastText.textContent = msg;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 3000);
+    }
+
+    function copyTextDirectly(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'absolute';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+      } catch (err) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text);
+        }
+      }
+      document.body.removeChild(textarea);
+    }
+
+    // Share modal handlers
+    function openShareModal() {
+      const shareUrl = getShareableUrl();
+      const input = document.getElementById('share-url-input');
+      input.value = shareUrl;
+
+      // Show native share button if supported by browser/device
+      const nativeBtn = document.getElementById('btn-native-share');
+      if (navigator.share) {
+        nativeBtn.classList.remove('hidden');
+        nativeBtn.classList.add('flex');
+      }
+
+      const modal = document.getElementById('share-modal');
+      modal.classList.remove('hidden');
+    }
+
+    function closeShareModal() {
+      document.getElementById('share-modal').classList.add('hidden');
+    }
+
+    function copyShareLink() {
+      const input = document.getElementById('share-url-input');
+      const url = input.value.trim() || getShareableUrl();
+      copyTextDirectly(url);
+
+      // Visual button feedback
+      const copyBtn = document.getElementById('btn-copy-link');
+      copyBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Copied!</span>`;
+      copyBtn.classList.remove('bg-cyan-500');
+      copyBtn.classList.add('bg-emerald-500');
+
+      showToast("Lab web link copied to clipboard!");
+
+      setTimeout(() => {
+        copyBtn.innerHTML = `<i class="fa-solid fa-copy"></i> <span>Copy</span>`;
+        copyBtn.classList.remove('bg-emerald-500');
+        copyBtn.classList.add('bg-cyan-500');
+      }, 2500);
+    }
+
+    function shareToWhatsApp() {
+      const input = document.getElementById('share-url-input');
+      const targetUrl = input.value.trim() || getShareableUrl();
+      const message = getFormattedShareMessage(targetUrl);
+      const encodedMsg = encodeURIComponent(message);
+      
+      // Modern universal WhatsApp endpoint (works across WhatsApp Web and Mobile Apps)
+      const waUrl = `https://wa.me/?text=${encodedMsg}`;
+
+      try {
+        const opened = window.open(waUrl, '_blank', 'noopener,noreferrer');
+        if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+          // If popup is blocked by iframe, fallback to clipboard with instructions
+          copyTextDirectly(message);
+          showToast("WhatsApp message copied! Paste it into your WhatsApp chat.");
+        }
+      } catch (e) {
+        copyTextDirectly(message);
+        showToast("WhatsApp message copied! Paste it into your WhatsApp chat.");
+      }
+    }
+
+    function shareToTelegram() {
+      const input = document.getElementById('share-url-input');
+      const targetUrl = input.value.trim() || getShareableUrl();
+      const text = `🔬 THE PHYSICS ROOM by Mayur Sir - Electromagnetic Induction & Lenz's Law Virtual Lab`;
+      const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(targetUrl)}&text=${encodeURIComponent(text)}`;
+
+      try {
+        const opened = window.open(tgUrl, '_blank', 'noopener,noreferrer');
+        if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+          copyTextDirectly(`${text}\n${targetUrl}`);
+          showToast("Telegram message copied! Paste it into your Telegram channel.");
+        }
+      } catch (e) {
+        copyTextDirectly(`${text}\n${targetUrl}`);
+        showToast("Telegram message copied! Paste it into your Telegram channel.");
+      }
+    }
+
+    function copyFullInviteMessage() {
+      const input = document.getElementById('share-url-input');
+      const targetUrl = input.value.trim() || getShareableUrl();
+      const message = getFormattedShareMessage(targetUrl);
+      copyTextDirectly(message);
+      showToast("Full study group message copied! Ready to paste.");
+    }
+
+    async function shareViaDeviceNative() {
+      const input = document.getElementById('share-url-input');
+      const targetUrl = input.value.trim() || getShareableUrl();
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "THE PHYSICS ROOM by Mayur Sir",
+            text: "Electromagnetic Induction & Lenz's Law Virtual Lab for NEET & JEE",
+            url: targetUrl
+          });
+        } catch (err) {
+          // User dismissed or share error
+        }
+      } else {
+        copyShareLink();
+      }
+    }
+
+    // Physical state variables
+    const state = {
+      // Magnet properties
+      magnetX: 120,          // Canvas coordinates X
+      magnetY: 220,          // Canvas coordinates Y
+      magnetLength: 140,
+      magnetHeight: 50,
+      magnetFacingPole: 'N', // 'N' or 'S' facing the coil (right side of bar)
+      magnetStrength: 1.0,   // Tesla equivalent factor
+      velocity: 0,           // cm/s
+      prevX: 120,
+      lastTimestamp: performance.now(),
+
+      // Coil properties
+      coilX: 520,            // Center X of coil
+      coilY: 220,            // Center Y of coil
+      coilRadius: 55,        // pixel radius (~ corresponding to area)
+      coilTurns: 10,
+      coilAreaCm2: 50,       // cm^2
+      circuitResistance: 5.0,// Ohms
+
+      // Dynamic physical outputs
+      flux: 0,               // milliWebers (mWb)
+      dFluxDt: 0,            // mWb/s
+      inducedEMF: 0,         // milliVolts (mV)
+      inducedCurrent: 0,     // milliAmperes (mA)
+      galvanoAngle: 0,       // Radians for meter needle
+      galvanoTargetAngle: 0, // Target angle
+      currentFlowPhase: 0,   // For animating electrons/arrows
+      bulbBrightness: 0,
+
+      // Interaction flags
+      isDragging: false,
+      dragOffsetX: 0,
+      isOscillating: false,
+      oscillationFreq: 0.8,  // Hz
+      oscillationTime: 0,
+      showFieldLines: true,
+      audioFeedback: true,
+
+      // Historical data for scope
+      scopeHistory: [],
+      maxScopePoints: 200,
+
+      // Recording trials
+      recordedTrials: []
+    };
+
+    // Web Audio Synthesizer for realistic lab effects
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playInductionTone(currentMagnitude) {
+      if (!state.audioFeedback || Math.abs(currentMagnitude) < 0.2) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        // Pitch scales with induced current magnitude
+        const baseFreq = 220; // A3
+        const freq = baseFreq + Math.min(Math.abs(currentMagnitude) * 12, 600);
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.type = 'sine';
+
+        // Volume proportional to power
+        const vol = Math.min(Math.abs(currentMagnitude) / 40, 0.15);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+      } catch (e) {
+        // Audio policy ignore
+      }
+    }
+
+    const simCanvas = document.getElementById('simCanvas');
+    const simCtx = simCanvas.getContext('2d');
+    const scopeCanvas = document.getElementById('scopeCanvas');
+    const scopeCtx = scopeCanvas.getContext('2d');
+
+    function resizeCanvases() {
+      const dpr = window.devicePixelRatio || 1;
+      
+      // Main Canvas
+      const rect = simCanvas.getBoundingClientRect();
+      simCanvas.width = rect.width * dpr;
+      simCanvas.height = rect.height * dpr;
+      simCtx.scale(dpr, dpr);
+
+      // Adjust coil coordinates relative to container width
+      state.coilX = Math.max(340, rect.width - 200);
+      state.coilY = rect.height / 2;
+      if (!state.isDragging && !state.isOscillating) {
+        state.magnetY = rect.height / 2;
+      }
+
+      // Scope Canvas
+      const scopeRect = scopeCanvas.getBoundingClientRect();
+      scopeCanvas.width = scopeRect.width * dpr;
+      scopeCanvas.height = scopeRect.height * dpr;
+      scopeCtx.scale(dpr, dpr);
+    }
+
+    window.addEventListener('resize', resizeCanvases);
+
+    /**
+     * Calculates magnetic flux through a circular loop of radius R_coil
+     * located at x_coil due to a bar magnet dipole at x_magnet.
+     * Approximates axial B-field: B(x) = (mu0 * M) / (2 * pi * (x^2 + a^2)^(3/2))
+     */
+    function computeFlux(magnetX) {
+      // Distance from right pole of magnet to the coil face
+      const poleFaceX = state.magnetX + state.magnetLength / 2;
+      const dist = (state.coilX - poleFaceX); // in pixels
+      const distMeters = dist * 0.002; // scale: 500 px = 1 meter
+
+      // Characteristic pole spacing parameter 'a'
+      const a = 0.08; 
+      const effectiveDistSq = (distMeters * distMeters) + (a * a);
+      
+      // Base field B0
+      const poleFactor = state.magnetFacingPole === 'N' ? 1.0 : -1.0;
+      const B_axial = (state.magnetStrength * poleFactor * 0.04) / Math.pow(effectiveDistSq, 1.5);
+
+      // Area in m^2
+      const areaM2 = (state.coilAreaCm2 * 1e-4);
+
+      // Flux = B * A (in milliWebers for clean display)
+      const fluxMilliWebers = B_axial * areaM2 * 1000;
+      return fluxMilliWebers;
+    }
+
+    /**
+     * Updates physics telemetry on each animation step
+     */
+    function updatePhysics(dt) {
+      if (dt <= 0) return;
+
+      // Handle automatic harmonic oscillation
+      if (state.isOscillating) {
+        state.oscillationTime += dt;
+        const omega = 2 * Math.PI * state.oscillationFreq;
+        const amplitude = 140; // pixel excursion
+        const centerX = state.coilX - 220;
+        state.magnetX = centerX + amplitude * Math.cos(omega * state.oscillationTime);
+      }
+
+      // Constrain magnet to canvas boundaries
+      const minX = 40;
+      const maxX = state.coilX + 80;
+      state.magnetX = Math.max(minX, Math.min(maxX, state.magnetX));
+
+      // Calculate instantaneous velocity (px/sec -> cm/sec)
+      const dx = state.magnetX - state.prevX;
+      state.velocity = (dx / dt) * 0.2; // scaling factor to realistic cm/s
+      state.prevX = state.magnetX;
+
+      // Calculate current flux and derivative dPhi/dt
+      const currentFlux = computeFlux(state.magnetX);
+      const prevFlux = state.flux;
+      state.flux = currentFlux;
+
+      // Rate of change of flux (milliWebers / sec)
+      state.dFluxDt = (state.flux - prevFlux) / dt;
+
+      // Filter out high-frequency sensor noise during dragging
+      if (Math.abs(state.velocity) < 0.05) {
+        state.dFluxDt = 0;
+      }
+
+      // Faraday's Law: Induced EMF = -N * (dPhi/dt) (milliVolts)
+      state.inducedEMF = -state.coilTurns * state.dFluxDt;
+
+      // Ohm's Law: I = EMF / R (milliAmperes)
+      state.inducedCurrent = state.inducedEMF / state.circuitResistance;
+
+      // Audio feedback tone
+      if (Math.abs(state.inducedCurrent) > 0.8) {
+        playInductionTone(state.inducedCurrent);
+      }
+
+      // Smooth galvanometer needle deflection (damped harmonic response)
+      // Scale: 20 mA = full deflection (45 degrees / 0.78 rad)
+      state.galvanoTargetAngle = Math.max(-0.78, Math.min(0.78, (state.inducedCurrent / 25.0) * 0.78));
+      state.galvanoAngle += (state.galvanoTargetAngle - state.galvanoAngle) * Math.min(1.0, dt * 18.0);
+
+      // Lightbulb filament brightness (P = I^2 * R)
+      const power = Math.pow(state.inducedCurrent / 20.0, 2);
+      state.bulbBrightness = Math.min(1.0, power);
+
+      // Phase for moving current electron arrows
+      state.currentFlowPhase += state.inducedCurrent * dt * 0.4;
+
+      // Push history point to oscilloscope
+      state.scopeHistory.push({
+        flux: state.flux,
+        emf: state.inducedEMF
+      });
+      if (state.scopeHistory.length > state.maxScopePoints) {
+        state.scopeHistory.shift();
+      }
+
+      // Update DOM Badges
+      updateTelemetryUI();
+    }
+
+    function updateTelemetryUI() {
+      document.getElementById('telemetry-flux').textContent = `${state.flux.toFixed(2)} mWb`;
+      
+      const emfEl = document.getElementById('telemetry-emf');
+      emfEl.textContent = `${state.inducedEMF.toFixed(2)} mV`;
+      emfEl.className = `text-base sm:text-lg font-bold font-mono-code ${state.inducedEMF > 0.05 ? 'text-emerald-400' : state.inducedEMF < -0.05 ? 'text-rose-400' : 'text-slate-400'}`;
+
+      const currEl = document.getElementById('telemetry-current');
+      currEl.textContent = `${state.inducedCurrent.toFixed(2)} mA`;
+
+      // Lenz's Rule Face Interpretation
+      const lenzEl = document.getElementById('telemetry-lenz');
+      const facing = state.magnetFacingPole;
+      const isMovingTowards = (state.velocity > 0.5 && state.magnetX < state.coilX) || (state.velocity < -0.5 && state.magnetX > state.coilX);
+      const isMovingAway = (state.velocity < -0.5 && state.magnetX < state.coilX) || (state.velocity > 0.5 && state.magnetX > state.coilX);
+
+      if (Math.abs(state.velocity) <= 0.5) {
+        lenzEl.innerHTML = `<span class="text-slate-400 font-medium">Neutral (v ≈ 0, No induced pole)</span>`;
+      } else if (isMovingTowards) {
+        if (facing === 'N') {
+          lenzEl.innerHTML = `<span class="text-rose-400 font-bold">North Pole (Repels approaching N)</span>`;
+        } else {
+          lenzEl.innerHTML = `<span class="text-sky-400 font-bold">South Pole (Repels approaching S)</span>`;
+        }
+      } else if (isMovingAway) {
+        if (facing === 'N') {
+          lenzEl.innerHTML = `<span class="text-sky-400 font-bold">South Pole (Attracts receding N)</span>`;
+        } else {
+          lenzEl.innerHTML = `<span class="text-rose-400 font-bold">North Pole (Attracts receding S)</span>`;
+        }
+      }
+
+      // Velocity Badge
+      document.getElementById('motion-badge').textContent = `v = ${state.velocity.toFixed(1)} cm/s`;
+    }
+
+    function drawSimulation() {
+      const rect = simCanvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+
+      simCtx.clearRect(0, 0, w, h);
+
+      // Draw subtle workbench grid
+      simCtx.strokeStyle = 'rgba(51, 65, 85, 0.25)';
+      simCtx.lineWidth = 1;
+      const gridSize = 30;
+      for (let x = 0; x < w; x += gridSize) {
+        simCtx.beginPath();
+        simCtx.moveTo(x, 0);
+        simCtx.lineTo(x, h);
+        simCtx.stroke();
+      }
+      for (let y = 0; y < h; y += gridSize) {
+        simCtx.beginPath();
+        simCtx.moveTo(0, y);
+        simCtx.lineTo(w, y);
+        simCtx.stroke();
+      }
+
+      // 1. Draw Magnetic Field Lines (if enabled)
+      if (state.showFieldLines) {
+        drawMagneticFieldLines(simCtx);
+      }
+
+      // 2. Draw Circuit Wiring & Galvanometer Stand
+      drawCircuitApparatus(simCtx);
+
+      // 3. Draw Solenoid / Coil Rings (Front & Back 3D perspective)
+      drawCoilSolenoid(simCtx);
+
+      // 4. Draw Permanent Bar Magnet with pole labels & drag handle
+      drawBarMagnet(simCtx);
+
+      // 5. Draw Lenz Opposing Force Vectors and Induced Polarity Badge
+      drawLenzForceVectors(simCtx);
+    }
+
+    /**
+     * Draws dipole magnetic field lines curving from North to South
+     */
+    function drawMagneticFieldLines(ctx) {
+      const magX = state.magnetX;
+      const magY = state.magnetY;
+      const L = state.magnetLength;
+      const H = state.magnetHeight;
+
+      // Position of North and South pole centers
+      const isNorthFacing = (state.magnetFacingPole === 'N');
+      const northX = isNorthFacing ? (magX + L/2 - 10) : (magX - L/2 + 10);
+      const southX = isNorthFacing ? (magX - L/2 + 10) : (magX + L/2 - 10);
+
+      ctx.save();
+      ctx.lineWidth = 1.5;
+
+      const radii = [30, 60, 95, 140];
+      radii.forEach((r, idx) => {
+        // Upper looping field line
+        ctx.strokeStyle = `rgba(56, 189, 248, ${0.45 - idx * 0.08})`;
+        ctx.beginPath();
+        ctx.moveTo(northX, magY - H/2);
+        ctx.bezierCurveTo(
+          northX + (isNorthFacing ? r * 1.4 : -r * 1.4), magY - H/2 - r * 1.2,
+          southX + (isNorthFacing ? -r * 1.4 : r * 1.4), magY - H/2 - r * 1.2,
+          southX, magY - H/2
+        );
+        ctx.stroke();
+
+        // Lower looping field line
+        ctx.beginPath();
+        ctx.moveTo(northX, magY + H/2);
+        ctx.bezierCurveTo(
+          northX + (isNorthFacing ? r * 1.4 : -r * 1.4), magY + H/2 + r * 1.2,
+          southX + (isNorthFacing ? -r * 1.4 : r * 1.4), magY + H/2 + r * 1.2,
+          southX, magY + H/2
+        );
+        ctx.stroke();
+      });
+
+      // Axial field lines projecting directly out of the facing pole
+      const facingX = magX + L/2;
+      const dir = isNorthFacing ? 1 : -1;
+      for (let dy = -15; dy <= 15; dy += 15) {
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.beginPath();
+        ctx.moveTo(facingX, magY + dy);
+        ctx.lineTo(facingX + 180 * dir, magY + dy * 2.2);
+        ctx.stroke();
+
+        // Draw small directional arrowheads
+        drawArrowhead(ctx, facingX + 90 * dir, magY + dy * 1.6, dir > 0 ? 0 : Math.PI);
+      }
+
+      ctx.restore();
+    }
+
+    function drawArrowhead(ctx, x, y, angle) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+      ctx.beginPath();
+      ctx.moveTo(-6, -4);
+      ctx.lineTo(3, 0);
+      ctx.lineTo(-6, 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    /**
+     * Draws the complete circuit with Galvanometer, Lightbulb, and wiring
+     */
+    function drawCircuitApparatus(ctx) {
+      const cx = state.coilX;
+      const cy = state.coilY;
+      const meterX = cx;
+      const meterY = cy - 125;
+
+      ctx.save();
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 3;
+
+      // Connecting wires from coil to galvanometer
+      ctx.beginPath();
+      // Wire 1: Top connection
+      ctx.moveTo(cx - 30, cy - 50);
+      ctx.lineTo(cx - 30, meterY + 40);
+      ctx.lineTo(meterX - 25, meterY + 40);
+
+      // Wire 2: Bottom loop to bulb, then to meter
+      ctx.moveTo(cx + 30, cy - 50);
+      ctx.lineTo(cx + 30, meterY + 40);
+      ctx.lineTo(meterX + 25, meterY + 40);
+      ctx.stroke();
+
+      // Draw Galvanometer Dial Housing
+      const meterR = 48;
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(meterX, meterY, meterR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Galvanometer Face Markings (Center-Zero Dial)
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      const dialAngles = [-0.7, -0.45, -0.25, 0, 0.25, 0.45, 0.7];
+      dialAngles.forEach(ang => {
+        const x1 = meterX + Math.sin(ang) * (meterR - 10);
+        const y1 = meterY - Math.cos(ang) * (meterR - 10);
+        const x2 = meterX + Math.sin(ang) * (meterR - 2);
+        const y2 = meterY - Math.cos(ang) * (meterR - 2);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      });
+
+      // Dial labels: -G, 0, +G
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('0', meterX, meterY - meterR + 18);
+      ctx.font = '9px monospace';
+      ctx.fillStyle = '#ef4444';
+      ctx.fillText('-I', meterX - 25, meterY - 14);
+      ctx.fillStyle = '#10b981';
+      ctx.fillText('+I', meterX + 25, meterY - 14);
+      ctx.font = 'bold 12px Inter, sans-serif';
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText('G', meterX, meterY + 24);
+
+      // Galvanometer Deflecting Needle
+      ctx.save();
+      ctx.translate(meterX, meterY + 10);
+      ctx.rotate(state.galvanoAngle);
+      ctx.strokeStyle = '#f43f5e';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -meterR + 10);
+      ctx.stroke();
+
+      // Center pivot cap
+      ctx.fillStyle = '#e2e8f0';
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Indicator Light Bulb in circuit (near right of meter)
+      const bulbX = meterX + 75;
+      const bulbY = meterY + 40;
+      drawLightBulb(ctx, bulbX, bulbY, state.bulbBrightness);
+
+      ctx.restore();
+    }
+
+    /**
+     * Draws an interactive miniature incandescent bulb that glows with power
+     */
+    function drawLightBulb(ctx, x, y, intensity) {
+      ctx.save();
+      // Glow aura
+      if (intensity > 0.05) {
+        const glowGrad = ctx.createRadialGradient(x, y - 8, 2, x, y - 8, 24 * (0.8 + intensity));
+        glowGrad.addColorStop(0, `rgba(251, 191, 36, ${Math.min(0.9, intensity * 0.95)})`);
+        glowGrad.addColorStop(0.5, `rgba(245, 158, 11, ${Math.min(0.4, intensity * 0.5)})`);
+        glowGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(x, y - 8, 24 * (0.8 + intensity), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Bulb glass
+      ctx.fillStyle = intensity > 0.1 ? `rgba(254, 240, 138, ${0.4 + intensity * 0.6})` : 'rgba(148, 163, 184, 0.2)';
+      ctx.strokeStyle = intensity > 0.1 ? '#f59e0b' : '#64748b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x, y - 8, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Filament
+      ctx.strokeStyle = intensity > 0.1 ? '#ffffff' : '#94a3b8';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(x - 4, y - 4);
+      ctx.lineTo(x, y - 11);
+      ctx.lineTo(x + 4, y - 4);
+      ctx.stroke();
+
+      // Socket Base
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(x - 5, y + 2, 10, 5);
+
+      ctx.restore();
+    }
+
+    /**
+     * Draws the solenoid coil with turns, copper appearance, and current motion arrows
+     */
+    function drawCoilSolenoid(ctx) {
+      const cx = state.coilX;
+      const cy = state.coilY;
+      const turns = state.coilTurns;
+      const radius = state.coilRadius;
+      const coilLength = 120;
+      const spacing = coilLength / Math.max(1, turns);
+
+      ctx.save();
+
+      // Acrylic Core tube
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.4)';
+      ctx.strokeStyle = 'rgba(71, 85, 105, 0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(cx - coilLength/2 - 10, cy - radius * 0.75, coilLength + 20, radius * 1.5);
+      ctx.strokeRect(cx - coilLength/2 - 10, cy - radius * 0.75, coilLength + 20, radius * 1.5);
+
+      // Draw coil turns with 3D overlapping ellipse loops
+      for (let i = 0; i < turns; i++) {
+        const turnX = (cx - coilLength/2) + i * spacing;
+
+        // Copper ring path
+        ctx.strokeStyle = '#f97316'; // Copper color
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.ellipse(turnX, cy, 7, radius, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Highlight sheen
+        ctx.strokeStyle = '#fdba74';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.ellipse(turnX - 1.5, cy, 5, radius * 0.9, 0, -Math.PI/3, Math.PI/3);
+        ctx.stroke();
+      }
+
+      // Animated Current Direction Indicators around loop
+      if (Math.abs(state.inducedCurrent) > 0.1) {
+        const isUp = state.inducedCurrent > 0;
+        ctx.fillStyle = isUp ? '#10b981' : '#f59e0b';
+        ctx.strokeStyle = isUp ? '#065f46' : '#92400e';
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i < turns; i += 2) {
+          const turnX = (cx - coilLength/2) + i * spacing;
+          const arrowY = cy + Math.sin(state.currentFlowPhase + i) * (radius * 0.6);
+          
+          ctx.beginPath();
+          if (isUp) {
+            // Arrow pointing UP
+            ctx.moveTo(turnX - 4, arrowY + 3);
+            ctx.lineTo(turnX, arrowY - 4);
+            ctx.lineTo(turnX + 4, arrowY + 3);
+          } else {
+            // Arrow pointing DOWN
+            ctx.moveTo(turnX - 4, arrowY - 3);
+            ctx.lineTo(turnX, arrowY + 4);
+            ctx.lineTo(turnX + 4, arrowY - 3);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+
+      // Coil Labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${state.coilTurns} Turns Coil`, cx, cy + radius + 22);
+      ctx.fillText(`Area = ${state.coilAreaCm2} cm²`, cx, cy + radius + 36);
+
+      ctx.restore();
+    }
+
+    /**
+     * Draws the permanent Bar Magnet with North (Red) & South (Blue) poles
+     */
+    function drawBarMagnet(ctx) {
+      const x = state.magnetX - state.magnetLength / 2;
+      const y = state.magnetY - state.magnetHeight / 2;
+      const w = state.magnetLength;
+      const h = state.magnetHeight;
+      const halfW = w / 2;
+
+      ctx.save();
+
+      // Shadow under magnet
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+      ctx.shadowBlur = 16;
+      ctx.shadowOffsetY = 6;
+
+      const isNorthFacing = (state.magnetFacingPole === 'N');
+
+      // Left Pole Half
+      ctx.fillStyle = isNorthFacing ? '#1e40af' : '#b91c1c'; // Blue if South, Red if North
+      ctx.beginPath();
+      ctx.roundRect(x, y, halfW, h, [8, 0, 0, 8]);
+      ctx.fill();
+
+      // Right Pole Half (Facing coil)
+      ctx.fillStyle = isNorthFacing ? '#dc2626' : '#2563eb'; // Red if North, Blue if South
+      ctx.beginPath();
+      ctx.roundRect(x + halfW, y, halfW, h, [0, 8, 8, 0]);
+      ctx.fill();
+
+      // Reset shadow for text & bevel
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x, y, w, h);
+
+      // Central divider metallic seam
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(x + halfW - 2, y, 4, h);
+
+      // Pole labels (N / S)
+      ctx.font = 'bold 22px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+
+      if (isNorthFacing) {
+        ctx.fillText('S', x + halfW / 2, y + h / 2);
+        ctx.fillText('N', x + halfW + halfW / 2, y + h / 2);
+      } else {
+        ctx.fillText('N', x + halfW / 2, y + h / 2);
+        ctx.fillText('S', x + halfW + halfW / 2, y + h / 2);
+      }
+
+      // Drag Grip Dots in center
+      ctx.fillStyle = '#0f172a';
+      for (let dy = -8; dy <= 8; dy += 8) {
+        ctx.beginPath();
+        ctx.arc(x + halfW, y + h/2 + dy, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    /**
+     * Draws Lenz's Law induced magnetic poles & opposing force vectors
+     */
+    function drawLenzForceVectors(ctx) {
+      if (Math.abs(state.velocity) < 0.6) return;
+
+      const cx = state.coilX - 60; // Left face of coil
+      const cy = state.coilY;
+      const facing = state.magnetFacingPole;
+      const isApproaching = (state.velocity > 0 && state.magnetX < state.coilX);
+      const isReceding = (state.velocity < 0 && state.magnetX < state.coilX);
+
+      let inducedPole = '';
+      let isRepulsive = false;
+
+      if (isApproaching) {
+        inducedPole = facing; // N approaches -> creates N; S approaches -> creates S
+        isRepulsive = true;
+      } else if (isReceding) {
+        inducedPole = (facing === 'N' ? 'S' : 'N'); // N leaves -> creates S (attraction)
+        isRepulsive = false;
+      }
+
+      if (!inducedPole) return;
+
+      ctx.save();
+      // Draw Induced Pole Badge on Coil Face
+      const badgeColor = (inducedPole === 'N') ? '#ef4444' : '#3b82f6';
+      ctx.fillStyle = badgeColor;
+      ctx.beginPath();
+      ctx.arc(cx - 15, cy - 40, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 14px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(inducedPole, cx - 15, cy - 40);
+
+      // Force Vector on Magnet
+      const magnetRightX = state.magnetX + state.magnetLength / 2;
+      const vectorDir = isRepulsive ? -1 : 1; // Repulsive points LEFT, Attractive points RIGHT
+      const arrowLen = Math.min(60, Math.abs(state.velocity) * 2.5);
+
+      ctx.strokeStyle = isRepulsive ? '#f43f5e' : '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(magnetRightX, state.magnetY);
+      ctx.lineTo(magnetRightX + vectorDir * arrowLen, state.magnetY);
+      ctx.stroke();
+
+      // Arrowhead
+      drawArrowhead(ctx, magnetRightX + vectorDir * arrowLen, state.magnetY, vectorDir > 0 ? 0 : Math.PI);
+
+      // Force description label
+      ctx.font = '11px Inter, sans-serif';
+      ctx.fillStyle = isRepulsive ? '#f43f5e' : '#38bdf8';
+      ctx.fillText(
+        isRepulsive ? 'Opposing Magnetic Force (Repulsion)' : 'Opposing Magnetic Force (Attraction)',
+        magnetRightX - 30, state.magnetY + 40
+      );
+
+      ctx.restore();
+    }
+
+    function drawOscilloscope() {
+      const rect = scopeCanvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+
+      scopeCtx.clearRect(0, 0, w, h);
+
+      // Background Grid
+      scopeCtx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
+      scopeCtx.lineWidth = 1;
+      
+      // Horizontal center ground line (0 V, 0 Wb)
+      const midY = h / 2;
+      scopeCtx.beginPath();
+      scopeCtx.moveTo(0, midY);
+      scopeCtx.lineTo(w, midY);
+      scopeCtx.stroke();
+
+      // Vertical divisions
+      for (let x = 0; x < w; x += 40) {
+        scopeCtx.beginPath();
+        scopeCtx.moveTo(x, 0);
+        scopeCtx.lineTo(x, h);
+        scopeCtx.stroke();
+      }
+
+      if (state.scopeHistory.length < 2) return;
+
+      const step = w / state.maxScopePoints;
+
+      // 1. Plot Magnetic Flux Φ(t) in Cyan
+      scopeCtx.strokeStyle = '#38bdf8';
+      scopeCtx.lineWidth = 2;
+      scopeCtx.beginPath();
+      state.scopeHistory.forEach((pt, i) => {
+        const x = i * step;
+        // Scale: 5 mWb full scale
+        const y = midY - (pt.flux / 5.0) * (midY * 0.8);
+        if (i === 0) scopeCtx.moveTo(x, y);
+        else scopeCtx.lineTo(x, y);
+      });
+      scopeCtx.stroke();
+
+      // 2. Plot Induced EMF ε(t) in Emerald
+      scopeCtx.strokeStyle = '#10b981';
+      scopeCtx.lineWidth = 2.2;
+      scopeCtx.beginPath();
+      state.scopeHistory.forEach((pt, i) => {
+        const x = i * step;
+        // Scale: 40 mV full scale
+        const y = midY - (pt.emf / 40.0) * (midY * 0.8);
+        if (i === 0) scopeCtx.moveTo(x, y);
+        else scopeCtx.lineTo(x, y);
+      });
+      scopeCtx.stroke();
+    }
+
+    function clearOscilloscope() {
+      state.scopeHistory = [];
+    }
+
+    function getPointerPos(e) {
+      const rect = simCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function isPointerOverMagnet(pos) {
+      const halfW = state.magnetLength / 2;
+      const halfH = state.magnetHeight / 2;
+      return (
+        pos.x >= state.magnetX - halfW - 20 &&
+        pos.x <= state.magnetX + halfW + 20 &&
+        pos.y >= state.magnetY - halfH - 20 &&
+        pos.y <= state.magnetY + halfH + 20
+      );
+    }
+
+    function onPointerDown(e) {
+      const pos = getPointerPos(e);
+      if (isPointerOverMagnet(pos)) {
+        state.isDragging = true;
+        state.dragOffsetX = pos.x - state.magnetX;
+        state.isOscillating = false; // Disable auto-oscillation during drag
+        updateOscillationButtonUI();
+      }
+    }
+
+    function onPointerMove(e) {
+      if (!state.isDragging) return;
+      e.preventDefault();
+      const pos = getPointerPos(e);
+      state.magnetX = pos.x - state.dragOffsetX;
+    }
+
+    function onPointerUp() {
+      state.isDragging = false;
+    }
+
+    simCanvas.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    simCanvas.addEventListener('touchstart', onPointerDown, { passive: false });
+    window.addEventListener('touchmove', onPointerMove, { passive: false });
+    window.addEventListener('touchend', onPointerUp);
+
+    function flipMagnetPoles() {
+      state.magnetFacingPole = (state.magnetFacingPole === 'N') ? 'S' : 'N';
+      document.getElementById('btn-pole-txt').textContent = `${state.magnetFacingPole} Facing`;
+    }
+
+    function resetMagnetPosition() {
+      state.magnetX = 140;
+      state.velocity = 0;
+      state.isOscillating = false;
+      updateOscillationButtonUI();
+    }
+
+    function toggleOscillation() {
+      state.isOscillating = !state.isOscillating;
+      updateOscillationButtonUI();
+    }
+
+    function updateOscillationButtonUI() {
+      const btn = document.getElementById('btn-oscillation');
+      if (state.isOscillating) {
+        btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500');
+        btn.classList.add('bg-rose-600', 'hover:bg-rose-500');
+        btn.innerHTML = `<i class="fa-solid fa-stop"></i> <span>Stop Oscillation</span>`;
+      } else {
+        btn.classList.remove('bg-rose-600', 'hover:bg-rose-500');
+        btn.classList.add('bg-indigo-600', 'hover:bg-indigo-500');
+        btn.innerHTML = `<i class="fa-solid fa-arrows-spin"></i> <span>Oscillate (SHM)</span>`;
+      }
+    }
+
+    function triggerMagnetStep(dir) {
+      state.isOscillating = false;
+      updateOscillationButtonUI();
+      // Impulse motion
+      const step = dir * 60;
+      state.magnetX = Math.max(50, Math.min(state.coilX + 40, state.magnetX + step));
+    }
+
+    function toggleFieldLines() {
+      state.showFieldLines = !state.showFieldLines;
+      document.getElementById('field-status-txt').textContent = state.showFieldLines ? 'ON' : 'OFF';
+    }
+
+    function toggleAudioFeedback() {
+      state.audioFeedback = !state.audioFeedback;
+      document.getElementById('sound-status-txt').textContent = state.audioFeedback ? 'ON' : 'OFF';
+      if (state.audioFeedback) getAudioContext();
+    }
+
+    function updateSimulationParameters() {
+      state.coilTurns = parseInt(document.getElementById('param-turns').value, 10);
+      document.getElementById('label-turns').textContent = `${state.coilTurns} turns`;
+
+      state.coilAreaCm2 = parseFloat(document.getElementById('param-area').value);
+      document.getElementById('label-area').textContent = `${state.coilAreaCm2.toFixed(1)} cm²`;
+      // Adjust visual coil radius accordingly
+      state.coilRadius = 35 + (state.coilAreaCm2 / 100) * 35;
+
+      state.magnetStrength = parseFloat(document.getElementById('param-strength').value);
+      document.getElementById('label-strength').textContent = `${state.magnetStrength.toFixed(1)} T`;
+
+      state.circuitResistance = parseFloat(document.getElementById('param-resistance').value);
+      document.getElementById('label-resistance').textContent = `${state.circuitResistance.toFixed(1)} Ω`;
+
+      state.oscillationFreq = parseFloat(document.getElementById('param-freq').value);
+      document.getElementById('label-freq').textContent = `${state.oscillationFreq.toFixed(1)} Hz`;
+    }
+
+    function resetDefaultParameters() {
+      document.getElementById('param-turns').value = 10;
+      document.getElementById('param-area').value = 50;
+      document.getElementById('param-strength').value = 1.0;
+      document.getElementById('param-resistance').value = 5.0;
+      document.getElementById('param-freq').value = 0.8;
+      updateSimulationParameters();
+    }
+
+    function switchLabTab(tabKey) {
+      const tabs = ['sim', 'predict', 'verify', 'quiz'];
+      tabs.forEach(key => {
+        const content = document.getElementById(`tab-content-${key}`);
+        const btn = document.getElementById(`tab-btn-${key}`);
+        if (key === tabKey) {
+          content.classList.remove('hidden');
+          content.classList.add('flex');
+          btn.className = "px-3 sm:px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 bg-cyan-500 text-slate-950 font-semibold shadow";
+        } else {
+          content.classList.add('hidden');
+          content.classList.remove('flex');
+          btn.className = "px-3 sm:px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 text-slate-300 hover:text-white";
+        }
+      });
+
+      if (tabKey === 'verify') {
+        renderVerifyChart();
+      } else if (tabKey === 'predict') {
+        if (!currentScenario) generateRandomPredictionChallenge();
+      }
+    }
+
+    const PREDICTION_SCENARIOS = [
+      {
+        id: 1,
+        title: "North Pole Approaching the Coil",
+        text: "A bar magnet is moved rapidly TOWARDS the stationary coil with its NORTH pole facing the coil.",
+        diagram: "[ S === N ]  ===>   [ ( ) ( ) ( ) ]",
+        facingPole: 'N',
+        motion: 'TOWARDS',
+        correctPole: 'NORTH',
+        correctDir: 'ANTICLOCKWISE',
+        correctForce: 'REPULSIVE',
+        correctMeter: 'RIGHT',
+        explanation: "By Lenz's law, the coil develops a NORTH pole on its facing end to oppose the increasing inward flux (repelling the incoming North). A North pole corresponds to Anticlockwise current, causing positive (Right) galvanometer deflection."
+      },
+      {
+        id: 2,
+        title: "North Pole Moving Away from Coil",
+        text: "The bar magnet with its NORTH pole facing the coil is rapidly PULLED AWAY from the coil.",
+        diagram: "<===  [ S === N ]        [ ( ) ( ) ( ) ]",
+        facingPole: 'N',
+        motion: 'AWAY',
+        correctPole: 'SOUTH',
+        correctDir: 'CLOCKWISE',
+        correctForce: 'ATTRACTIVE',
+        correctMeter: 'LEFT',
+        explanation: "As the North pole moves away, the magnetic flux decreases. By Lenz's law, the coil creates an attracting SOUTH pole to oppose the departure. A South pole corresponds to Clockwise current, causing negative (Left) galvanometer deflection."
+      },
+      {
+        id: 3,
+        title: "South Pole Approaching the Coil",
+        text: "A bar magnet is pushed rapidly TOWARDS the coil with its SOUTH pole facing the coil.",
+        diagram: "[ N === S ]  ===>   [ ( ) ( ) ( ) ]",
+        facingPole: 'S',
+        motion: 'TOWARDS',
+        correctPole: 'SOUTH',
+        correctDir: 'CLOCKWISE',
+        correctForce: 'REPULSIVE',
+        correctMeter: 'LEFT',
+        explanation: "By Lenz's law, the approaching South pole causes the coil to develop an opposing SOUTH pole (repulsion). South pole corresponds to Clockwise current circulation, deflecting the meter to the Left."
+      },
+      {
+        id: 4,
+        title: "South Pole Moving Away from Coil",
+        text: "The bar magnet with its SOUTH pole facing the coil is withdrawn rapidly AWAY from the coil.",
+        diagram: "<===  [ N === S ]        [ ( ) ( ) ( ) ]",
+        facingPole: 'S',
+        motion: 'AWAY',
+        correctPole: 'NORTH',
+        correctDir: 'ANTICLOCKWISE',
+        correctForce: 'ATTRACTIVE',
+        correctMeter: 'RIGHT',
+        explanation: "When the South pole withdraws, inward flux decreases. Lenz's law induces a NORTH pole to attract the receding South pole. North corresponds to Anticlockwise current, deflecting the meter Right."
+      },
+      {
+        id: 5,
+        title: "Stationary Magnet near Coil",
+        text: "The bar magnet is held COMPLETELY STATIONARY inside or just outside the coil.",
+        diagram: "[ S === N ] (Stationary)  [ ( ) ( ) ( ) ]",
+        facingPole: 'N',
+        motion: 'STATIONARY',
+        correctPole: 'NONE',
+        correctDir: 'ZERO',
+        correctForce: 'ZERO',
+        correctMeter: 'ZERO',
+        explanation: "Even though magnetic flux through the coil is large, the RATE OF CHANGE of flux is zero (dΦ/dt = 0). By Faraday's Law, induced EMF is strictly zero, current is zero, and no magnetic force exists."
+      }
+    ];
+
+    let currentScenario = null;
+    let studentPredictions = { pole: null, dir: null, force: null, meter: null };
+    let predScore = { correct: 0, total: 0 };
+
+    function generateRandomPredictionChallenge() {
+      const idx = Math.floor(Math.random() * PREDICTION_SCENARIOS.length);
+      currentScenario = PREDICTION_SCENARIOS[idx];
+
+      document.getElementById('pred-scenario-text').textContent = currentScenario.text;
+      document.getElementById('pred-scenario-diagram').innerHTML = `
+        <div class="font-mono-code text-sm sm:text-base text-cyan-300 bg-slate-900 px-4 py-2 rounded border border-slate-700 tracking-wider">
+          ${currentScenario.diagram}
+        </div>
+      `;
+
+      // Clear selections
+      studentPredictions = { pole: null, dir: null, force: null, meter: null };
+      ['pole', 'dir', 'force', 'meter'].forEach(category => {
+        document.querySelectorAll(`.pred-${category}-btn`).forEach(btn => {
+          btn.classList.remove('bg-cyan-500', 'text-slate-950', 'border-cyan-400');
+        });
+      });
+
+      document.getElementById('prediction-result-box').className = 'hidden';
+    }
+
+    function selectPrediction(category, val) {
+      studentPredictions[category] = val;
+      document.querySelectorAll(`.pred-${category}-btn`).forEach(btn => {
+        btn.classList.remove('bg-cyan-500', 'text-slate-950', 'border-cyan-400', 'font-extrabold');
+      });
+      const selectedBtn = document.getElementById(`btn-pred-${category}-${val}`);
+      if (selectedBtn) {
+        selectedBtn.classList.add('bg-cyan-500', 'text-slate-950', 'border-cyan-400', 'font-extrabold');
+      }
+    }
+
+    function evaluatePredictionAndExecute() {
+      if (!studentPredictions.pole || !studentPredictions.dir || !studentPredictions.force || !studentPredictions.meter) {
+        const resBox = document.getElementById('prediction-result-box');
+        resBox.className = 'p-4 rounded-xl border border-amber-500/40 bg-amber-950/40 text-amber-200 block text-xs sm:text-sm';
+        resBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Please select an answer for all 4 hypothesis questions before verifying!`;
+        return;
+      }
+
+      const isPoleCorrect = studentPredictions.pole === currentScenario.correctPole;
+      const isDirCorrect = studentPredictions.dir === currentScenario.correctDir;
+      const isForceCorrect = studentPredictions.force === currentScenario.correctForce;
+      const isMeterCorrect = studentPredictions.meter === currentScenario.correctMeter;
+
+      const allCorrect = isPoleCorrect && isDirCorrect && isForceCorrect && isMeterCorrect;
+      predScore.total++;
+      if (allCorrect) predScore.correct++;
+
+      document.getElementById('pred-score-val').textContent = `${predScore.correct} / ${predScore.total}`;
+
+      const resBox = document.getElementById('prediction-result-box');
+      resBox.className = `p-4 rounded-xl border ${allCorrect ? 'border-emerald-500/50 bg-emerald-950/50 text-emerald-200' : 'border-rose-500/50 bg-rose-950/50 text-rose-200'} block text-xs sm:text-sm space-y-2`;
+
+      resBox.innerHTML = `
+        <div class="flex items-center gap-2 font-bold text-base">
+          <i class="fa-solid ${allCorrect ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-rose-400'}"></i>
+          <span>${allCorrect ? 'Brilliant! All Predictions Verified Correctly!' : 'Some Predictions Were Incorrect.'}</span>
+        </div>
+        <p class="text-slate-200">${currentScenario.explanation}</p>
+        <div class="mt-2 text-xs font-mono-code text-cyan-300">
+          Expected: Pole: [${currentScenario.correctPole}], Direction: [${currentScenario.correctDir}], Force: [${currentScenario.correctForce}], Meter: [${currentScenario.correctMeter}]
+        </div>
+      `;
+
+      // Set simulation state to match scenario and play it
+      state.magnetFacingPole = currentScenario.facingPole;
+      document.getElementById('btn-pole-txt').textContent = `${state.magnetFacingPole} Facing`;
+
+      if (currentScenario.motion === 'TOWARDS') {
+        state.magnetX = 100;
+        switchLabTab('sim');
+        let t0 = performance.now();
+        const anim = (now) => {
+          if (now - t0 < 600) {
+            state.magnetX += 4;
+            requestAnimationFrame(anim);
+          }
+        };
+        requestAnimationFrame(anim);
+      } else if (currentScenario.motion === 'AWAY') {
+        state.magnetX = state.coilX - 100;
+        switchLabTab('sim');
+        let t0 = performance.now();
+        const anim = (now) => {
+          if (now - t0 < 600) {
+            state.magnetX -= 4;
+            requestAnimationFrame(anim);
+          }
+        };
+        requestAnimationFrame(anim);
+      } else {
+        state.magnetX = state.coilX - 120;
+        state.velocity = 0;
+        switchLabTab('sim');
+      }
+    }
+
+    let verifyChartInstance = null;
+
+    function renderVerifyChart() {
+      const ctx = document.getElementById('verifyChart').getContext('2d');
+      if (verifyChartInstance) {
+        verifyChartInstance.destroy();
+      }
+
+      const points = state.recordedTrials.map(t => ({
+        x: t.N * Math.abs(t.v),
+        y: Math.abs(t.emf)
+      }));
+
+      verifyChartInstance = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+          datasets: [{
+            label: 'Measured EMF (mV) vs (N * v)',
+            data: points,
+            backgroundColor: '#10b981',
+            borderColor: '#34d399',
+            pointRadius: 6,
+            pointHoverRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: { display: true, text: 'Product (N · v) [turns · cm/s]', color: '#94a3b8' },
+              grid: { color: 'rgba(51, 65, 85, 0.4)' },
+              ticks: { color: '#cbd5e1' }
+            },
+            y: {
+              title: { display: true, text: 'Peak Induced EMF |ε| [mV]', color: '#94a3b8' },
+              grid: { color: 'rgba(51, 65, 85, 0.4)' },
+              ticks: { color: '#cbd5e1' }
+            }
+          },
+          plugins: {
+            legend: { labels: { color: '#f8fafc', font: { size: 11 } } }
+          }
+        }
+      });
+
+      // Compute linear correlation R^2
+      if (points.length >= 2) {
+        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+        const n = points.length;
+        points.forEach(p => {
+          sumX += p.x; sumY += p.y;
+          sumXY += p.x * p.y;
+          sumX2 += p.x * p.x;
+          sumY2 += p.y * p.y;
+        });
+        const num = (n * sumXY - sumX * sumY);
+        const den = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+        const r = den !== 0 ? (num / den) : 0;
+        const r2 = (r * r).toFixed(4);
+        document.getElementById('r-squared-label').textContent = `Linear Fit R² = ${r2}`;
+      }
+    }
+
+    function recordCurrentDataPoint() {
+      const trialNum = state.recordedTrials.length + 1;
+      const N = state.coilTurns;
+      const A = state.coilAreaCm2;
+      const v = state.velocity.toFixed(1);
+      const dPhi = Math.abs(state.dFluxDt).toFixed(2);
+      const measuredEMF = Math.abs(state.inducedEMF).toFixed(2);
+      const theoreticalEMF = (N * Math.abs(state.dFluxDt)).toFixed(2);
+
+      const trial = {
+        trialNum, N, A, v: parseFloat(v), dPhi: parseFloat(dPhi), emf: parseFloat(measuredEMF), theor: parseFloat(theoreticalEMF)
+      };
+
+      state.recordedTrials.push(trial);
+      updateVerifyTableDOM();
+    }
+
+    function autoGenerateExperimentData() {
+      // Runs automated parameter sweep to create a textbook verification table
+      const velocities = [5.0, 10.0, 15.0, 20.0, 25.0];
+      state.recordedTrials = [];
+
+      velocities.forEach((vel, i) => {
+        const N = 5 * (i + 1);
+        const A = 50.0;
+        const dPhiDt = 0.15 * vel;
+        const emf = N * dPhiDt;
+        state.recordedTrials.push({
+          trialNum: i + 1,
+          N: N,
+          A: A,
+          v: vel,
+          dPhi: dPhiDt,
+          emf: emf,
+          theor: emf
+        });
+      });
+
+      updateVerifyTableDOM();
+      renderVerifyChart();
+    }
+
+    function updateVerifyTableDOM() {
+      const tbody = document.getElementById('verify-table-body');
+      if (state.recordedTrials.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500 italic">No experimental data recorded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = state.recordedTrials.map(t => `
+        <tr class="hover:bg-slate-800/40 transition">
+          <td class="p-2.5 font-bold text-slate-400">#${t.trialNum}</td>
+          <td class="p-2.5">${t.N}</td>
+          <td class="p-2.5">${t.A} cm²</td>
+          <td class="p-2.5">${t.v} cm/s</td>
+          <td class="p-2.5">${t.dPhi.toFixed(2)} mWb/s</td>
+          <td class="p-2.5 font-bold text-emerald-400">${t.emf.toFixed(2)} mV</td>
+          <td class="p-2.5 text-sky-400">${t.theor.toFixed(2)} mV</td>
+        </tr>
+      `).join('');
+
+      renderVerifyChart();
+    }
+
+    function clearExperimentTable() {
+      state.recordedTrials = [];
+      updateVerifyTableDOM();
+      renderVerifyChart();
+    }
+
+    const NEET_JEE_QUESTIONS = [
+      {
+        id: 1,
+        source: "NEET Physics (Electromagnetic Induction)",
+        question: "A cylindrical bar magnet is kept along the axis of a circular copper ring. If the magnet is rotated about its OWN longitudinal axis, the induced current in the ring will be:",
+        options: [
+          "Zero",
+          "Directly proportional to the angular speed of rotation",
+          "Clockwise only",
+          "Anticlockwise only"
+        ],
+        correct: 0,
+        explanation: "When the magnet rotates about its own magnetic dipole axis, the magnetic field lines possess cylindrical symmetry. Thus, the total magnetic flux linking the circular ring remains strictly constant in time (dΦ/dt = 0). Consequently, by Faraday's law, no EMF or current is induced."
+      },
+      {
+        id: 2,
+        source: "JEE Main (Lenz's Law & Conservation)",
+        question: "Lenz's law of electromagnetic induction is a direct consequence of the law of conservation of:",
+        options: [
+          "Charge",
+          "Energy",
+          "Linear Momentum",
+          "Magnetic Flux"
+        ],
+        correct: 1,
+        explanation: "Lenz's law expresses the conservation of energy. The mechanical work done by an external agent against the opposing induced magnetic force is converted into electrical energy (and subsequently dissipated as Joule heat)."
+      },
+      {
+        id: 3,
+        source: "NEET / AIPMT",
+        question: "A coil of resistance 10 Ω and 100 turns has a magnetic flux linking it that changes uniformly from 0.05 Wb to 0.01 Wb in 0.2 seconds. The magnitude of induced EMF and current are:",
+        options: [
+          "ε = 20 V, I = 2 A",
+          "ε = 2 V, I = 0.2 A",
+          "ε = 40 V, I = 4 A",
+          "ε = 0.2 V, I = 0.02 A"
+        ],
+        correct: 0,
+        explanation: "|ε| = N · |ΔΦ/Δt| = 100 · |(0.01 - 0.05) / 0.2| = 100 · (0.04 / 0.2) = 100 · 0.2 = 20 V. By Ohm's law, I = ε / R = 20 V / 10 Ω = 2 A."
+      },
+      {
+        id: 4,
+        source: "JEE Main (Metallic Ring Falling)",
+        question: "A bar magnet is dropped vertically along the axis of a fixed horizontal conducting ring. The downward acceleration of the magnet 'a' while entering the ring satisfies:",
+        options: [
+          "a = g (equal to acceleration due to gravity)",
+          "a < g (less than g)",
+          "a > g (greater than g)",
+          "a = 0"
+        ],
+        correct: 1,
+        explanation: "As the magnet falls towards the ring, the downward magnetic flux increases. By Lenz's law, the induced current produces an upward opposing magnetic force on the magnet. Hence, net downward force = mg - F_mag < mg, which means a < g."
+      },
+      {
+        id: 5,
+        source: "NEET / JEE Main (Flux vs Time Graph)",
+        question: "The magnetic flux Φ linked with a stationary loop of resistance R = 5 Ω varies with time as Φ(t) = (6t² - 5t + 1) mWb. The magnitude of induced current at t = 2 seconds is:",
+        options: [
+          "3.8 mA",
+          "19 mA",
+          "0.76 mA",
+          "2.4 mA"
+        ],
+        correct: 0,
+        explanation: "Induced EMF |ε| = |dΦ/dt| = |d/dt (6t² - 5t + 1)| = |12t - 5| mV. At t = 2 s: |ε| = |12(2) - 5| = 19 mV. Therefore, induced current I = ε / R = 19 mV / 5 Ω = 3.8 mA."
+      }
+    ];
+
+    let currentQuizIndex = 0;
+    let selectedQuizAnswers = {};
+    let quizScoreCount = 0;
+
+    function renderCurrentQuizQuestion() {
+      const q = NEET_JEE_QUESTIONS[currentQuizIndex];
+      const container = document.getElementById('quiz-container');
+
+      const isAnswered = selectedQuizAnswers.hasOwnProperty(currentQuizIndex);
+      const studentChoice = selectedQuizAnswers[currentQuizIndex];
+
+      container.innerHTML = `
+        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 border border-amber-500/30 text-amber-300">
+              ${q.source}
+            </span>
+            <span class="text-xs text-slate-400 font-mono-code">Q #${currentQuizIndex + 1}</span>
+          </div>
+          <p class="text-sm sm:text-base font-semibold text-slate-100 leading-relaxed">
+            ${q.question}
+          </p>
+
+          <!-- Options -->
+          <div class="flex flex-col gap-2 pt-2">
+            ${q.options.map((opt, optIdx) => {
+              let btnClass = "p-3 rounded-lg border text-xs sm:text-sm text-left transition font-medium ";
+              if (!isAnswered) {
+                btnClass += "border-slate-700 bg-slate-800/80 hover:bg-slate-700/80 text-slate-200";
+              } else {
+                if (optIdx === q.correct) {
+                  btnClass += "border-emerald-500 bg-emerald-950/60 text-emerald-200 font-bold";
+                } else if (optIdx === studentChoice) {
+                  btnClass += "border-rose-500 bg-rose-950/60 text-rose-200";
+                } else {
+                  btnClass += "border-slate-800 bg-slate-900/40 text-slate-500 opacity-60";
+                }
+              }
+
+              return `
+                <button onclick="handleQuizAnswer(${optIdx})" ${isAnswered ? 'disabled' : ''} class="${btnClass}">
+                  <span class="inline-block w-5 font-bold font-mono-code">${String.fromCharCode(65 + optIdx)}.</span> ${opt}
+                </button>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Explanation box -->
+          ${isAnswered ? `
+            <div class="mt-3 p-3.5 rounded-lg border ${studentChoice === q.correct ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-200' : 'border-rose-500/40 bg-rose-950/40 text-rose-200'} text-xs leading-relaxed space-y-1">
+              <div class="font-bold flex items-center gap-1.5">
+                <i class="fa-solid ${studentChoice === q.correct ? 'fa-check-circle text-emerald-400' : 'fa-xmark-circle text-rose-400'}"></i>
+                <span>${studentChoice === q.correct ? 'Correct Solution!' : 'Incorrect Solution'}</span>
+              </div>
+              <p class="text-slate-300">${q.explanation}</p>
+            </div>
+          ` : ''}
+
+        </div>
+      `;
+
+      // Update Navigation Buttons and Progress
+      document.getElementById('quiz-prev-btn').disabled = (currentQuizIndex === 0);
+      document.getElementById('quiz-next-btn').disabled = (currentQuizIndex === NEET_JEE_QUESTIONS.length - 1);
+      document.getElementById('quiz-progress-text').textContent = `Question ${currentQuizIndex + 1} of ${NEET_JEE_QUESTIONS.length}`;
+    }
+
+    function handleQuizAnswer(choiceIdx) {
+      if (selectedQuizAnswers.hasOwnProperty(currentQuizIndex)) return;
+      selectedQuizAnswers[currentQuizIndex] = choiceIdx;
+
+      if (choiceIdx === NEET_JEE_QUESTIONS[currentQuizIndex].correct) {
+        quizScoreCount++;
+      }
+      document.getElementById('quiz-score-display').textContent = `${quizScoreCount} / ${NEET_JEE_QUESTIONS.length}`;
+      renderCurrentQuizQuestion();
+    }
+
+    function navigateQuizQuestion(delta) {
+      const nextIdx = currentQuizIndex + delta;
+      if (nextIdx >= 0 && nextIdx < NEET_JEE_QUESTIONS.length) {
+        currentQuizIndex = nextIdx;
+        renderCurrentQuizQuestion();
+      }
+    }
+
+    function resetQuizState() {
+      currentQuizIndex = 0;
+      selectedQuizAnswers = {};
+      quizScoreCount = 0;
+      document.getElementById('quiz-score-display').textContent = `0 / ${NEET_JEE_QUESTIONS.length}`;
+      renderCurrentQuizQuestion();
+    }
+
+    let lastTime = performance.now();
+
+    function mainAnimationLoop(timestamp) {
+      const dt = Math.min((timestamp - lastTime) / 1000, 0.05); // Clamp dt to prevent tunneling
+      lastTime = timestamp;
+
+      // 1. Compute physics updates
+      updatePhysics(dt);
+
+      // 2. Render workbench simulation canvas
+      drawSimulation();
+
+      // 3. Render oscilloscope time-graph
+      drawOscilloscope();
+
+      requestAnimationFrame(mainAnimationLoop);
+    }
+
+    window.onload = function() {
+      resizeCanvases();
+      updateSimulationParameters();
+      generateRandomPredictionChallenge();
+      renderCurrentQuizQuestion();
+      
+      // Kick off 60fps animation loop
+      requestAnimationFrame(mainAnimationLoop);
+    };
+  </script>
+</body>
+</html>
